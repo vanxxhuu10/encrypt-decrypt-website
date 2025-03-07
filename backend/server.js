@@ -14,14 +14,14 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Load SECRET_KEY from .env file
-const SECRET_KEY = "d9fab44e53f9f7028df27035582a626e74b404a746101deb645a1c4753ce9add";
+const SECRET_KEY = process.env.SECRET_KEY || "d9fab44e53f9f7028df27035582a626e74b404a746101deb645a1c4753ce9add";
 if (!SECRET_KEY || SECRET_KEY.length !== 64) {
     console.error("❌ SECRET_KEY is missing or invalid! Please check your .env file.");
     process.exit(1);
 }
 
-// Define absolute database path
-const dbFolder = path.join(__dirname, "database");
+// Define absolute database path inside .vercel directory (to persist data in serverless environment)
+const dbFolder = path.join(__dirname, ".vercel", "database");
 const dbPath = path.join(dbFolder, "messages.db");
 
 // Ensure database folder exists
@@ -58,7 +58,7 @@ db.run(
 
 // Test route
 app.get("/", (req, res) => {
-    res.send("Encryption/Decryption Server is Running!");
+    res.send("Encryption/Decryption Server is Running on Vercel!");
 });
 
 // AES Encryption function
@@ -75,25 +75,6 @@ function encryptMessage(message) {
     }
 }
 
-// AES Decryption function
-function decryptMessage(encryptedMessage) {
-    try {
-        const parts = encryptedMessage.split(":");
-        if (parts.length !== 2) throw new Error("Invalid encrypted format");
-
-        const iv = Buffer.from(parts[0], "hex");
-        const encryptedText = parts[1];
-
-        const decipher = crypto.createDecipheriv("aes-256-cbc", Buffer.from(SECRET_KEY, "hex"), iv);
-        let decrypted = decipher.update(encryptedText, "hex", "utf-8");
-        decrypted += decipher.final("utf-8");
-        return decrypted;
-    } catch (error) {
-        console.error("❌ Decryption Error:", error.message);
-        return null;
-    }
-}
-
 // Encrypt and Store Message
 app.post("/encrypt", (req, res) => {
     const { message } = req.body;
@@ -101,10 +82,6 @@ app.post("/encrypt", (req, res) => {
 
     const encryptedMessage = encryptMessage(message);
     if (!encryptedMessage) return res.status(500).json({ error: "Encryption failed" });
-
-    console.log("🔹 Storing message in database...");
-    console.log("➡️ Original:", message);
-    console.log("➡️ Encrypted:", encryptedMessage);
 
     db.run(
         "INSERT INTO messages (original_message, encrypted_message) VALUES (?, ?)",
@@ -114,8 +91,6 @@ app.post("/encrypt", (req, res) => {
                 console.error("❌ Database Insert Error:", err.message);
                 return res.status(500).json({ error: "Failed to store message", details: err.message });
             }
-
-            console.log(`✅ Message stored successfully! ID: ${this.lastID}`);
             res.json({ id: this.lastID, encryptedMessage });
         }
     );
@@ -128,21 +103,12 @@ app.post("/decrypt", (req, res) => {
         return res.status(400).json({ error: "Encrypted message is required" });
     }
 
-    // Fetch the original message from the database
     db.get("SELECT original_message FROM messages WHERE encrypted_message = ?", [encryptedMessage], (err, row) => {
-        if (err) {
-            console.error("❌ Database Error:", err.message);
-            return res.status(500).json({ error: "Failed to retrieve message" });
-        }
-
-        if (!row) {
-            return res.status(404).json({ error: "No matching record found" });
-        }
-
-        // Send back the original message
+        if (err) return res.status(500).json({ error: "Failed to retrieve message" });
+        if (!row) return res.status(404).json({ error: "No matching record found" });
         res.json({ decryptedMessage: row.original_message });
     });
 });
 
-// Export app for Vercel
+// Export the app for Vercel
 module.exports = app;
