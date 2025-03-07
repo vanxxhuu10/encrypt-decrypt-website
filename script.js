@@ -40,6 +40,18 @@ document.getElementById("encryptButton").addEventListener("click", async (event)
     }
 });
 
+window.onload = () => {
+    // Clear localStorage when the page loads
+    localStorage.removeItem("messageInput");
+    localStorage.removeItem("encryptedMessage");
+
+    // Reset input fields
+    document.getElementById("messageInput").value = "";
+    document.getElementById("encryptedOutput").value = "";
+    document.getElementById("decryptedOutput").value = "";
+};
+
+
 document.getElementById("decryptButton").addEventListener("click", async () => {
     const encryptedMessage = document.getElementById("encryptedOutput").value.trim();
     if (!encryptedMessage) return alert("Please enter an encrypted message!");
