@@ -8,14 +8,13 @@ const path = require("path");
 const fs = require("fs");
 
 const app = express();
-const PORT = 5000;
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
 // Load SECRET_KEY from .env file
-const SECRET_KEY ="d9fab44e53f9f7028df27035582a626e74b404a746101deb645a1c4753ce9add";
+const SECRET_KEY = "d9fab44e53f9f7028df27035582a626e74b404a746101deb645a1c4753ce9add";
 if (!SECRET_KEY || SECRET_KEY.length !== 64) {
     console.error("❌ SECRET_KEY is missing or invalid! Please check your .env file.");
     process.exit(1);
@@ -107,8 +106,9 @@ app.post("/encrypt", (req, res) => {
     console.log("➡️ Original:", message);
     console.log("➡️ Encrypted:", encryptedMessage);
 
-    db.run("INSERT INTO messages (original_message, encrypted_message) VALUES (?, ?)", 
-        [message, encryptedMessage], 
+    db.run(
+        "INSERT INTO messages (original_message, encrypted_message) VALUES (?, ?)",
+        [message, encryptedMessage],
         function (err) {
             if (err) {
                 console.error("❌ Database Insert Error:", err.message);
@@ -121,8 +121,6 @@ app.post("/encrypt", (req, res) => {
     );
 });
 
-
-// Decrypt Message
 // Decrypt Message from Database
 app.post("/decrypt", (req, res) => {
     const { encryptedMessage } = req.body;
@@ -146,7 +144,5 @@ app.post("/decrypt", (req, res) => {
     });
 });
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`✅ Server is running on http://localhost:${PORT}`);
-});
+// Export app for Vercel
+module.exports = app;
