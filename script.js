@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("encryptedOutput").value = storedEncrypted;
     }
 });
+const backendURL = "https://encrypt-decrypt-website.vercel.app";
+
 document.getElementById("encryptButton").addEventListener("click", async (event) => {
     event.preventDefault(); // Prevent page refresh
 
@@ -20,7 +22,7 @@ document.getElementById("encryptButton").addEventListener("click", async (event)
     if (!message) return alert("Please enter a message!");
 
     try {
-        const response = await fetch("http://localhost:5000/encrypt", {
+        const response = await fetch(`${backendURL}/encrypt`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -54,11 +56,11 @@ window.onload = () => {
 
 
 document.getElementById("decryptButton").addEventListener("click", async () => {
-    const encryptedMessage = document.getElementById("messageInput").value; // Read input from message box
+    const encryptedMessage = document.getElementById("messageInput").value;
     if (!encryptedMessage) return alert("Please enter an encrypted message!");
 
     try {
-        const response = await fetch("http://localhost:5000/decrypt", {
+        const response = await fetch(`${backendURL}/decrypt`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -68,7 +70,7 @@ document.getElementById("decryptButton").addEventListener("click", async () => {
 
         const data = await response.json();
         if (response.ok) {
-            document.getElementById("decryptedOutput").value = data.decryptedMessage; // Display decrypted message
+            document.getElementById("decryptedOutput").value = data.decryptedMessage;
         } else {
             alert("Error: " + data.error);
         }
@@ -77,7 +79,6 @@ document.getElementById("decryptButton").addEventListener("click", async () => {
         console.error(error);
     }
 });
-
 
 document.querySelector("button[onclick='encryptMessage()']").addEventListener("click", async (event) => {
     event.preventDefault(); // Prevents any form submission or page reload
