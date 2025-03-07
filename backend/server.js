@@ -67,5 +67,16 @@ app.post("/decrypt", (req, res) => {
     res.json({ decryptedMessage });
 });
 
+app.get("/debug-db", (req, res) => {
+    db.all("SELECT * FROM messages", [], (err, rows) => {
+        if (err) {
+            console.error("❌ Database Query Error:", err.message);
+            return res.status(500).json({ error: "Database error", details: err.message });
+        }
+        console.log("📜 Stored Messages:", rows); // Log in Vercel logs
+        res.json(rows);
+    });
+});
+
 // **DO NOT use app.listen() on Vercel**
 module.exports = app;
