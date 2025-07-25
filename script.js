@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Restore values from localStorage
     const storedMessage = localStorage.getItem("messageInput");
     const storedEncrypted = localStorage.getItem("encryptedMessage");
 
@@ -7,10 +6,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (storedEncrypted) document.getElementById("encryptedOutput").value = storedEncrypted;
 });
 
-const backendURL = "https://encrypt-decrypt-website.vercel.app"; // Ensure this matches your deployed backend
+const backendURL = "https://encrypt-decrypt-website.vercel.app";
 
 document.getElementById("encryptButton").addEventListener("click", async (event) => {
-    event.preventDefault(); // Prevent page refresh
+    event.preventDefault(); 
 
     const messageInput = document.getElementById("messageInput").value.trim();
     if (!messageInput) return alert("Please enter a message!");
@@ -25,8 +24,6 @@ document.getElementById("encryptButton").addEventListener("click", async (event)
         const data = await response.json();
         if (response.ok) {
             document.getElementById("encryptedOutput").value = data.encryptedMessage;
-
-            // Save to localStorage
             localStorage.setItem("messageInput", messageInput);
             localStorage.setItem("encryptedMessage", data.encryptedMessage);
 
@@ -41,11 +38,8 @@ document.getElementById("encryptButton").addEventListener("click", async (event)
 });
 
 window.onload = () => {
-    // Clear localStorage when the page loads
     localStorage.removeItem("messageInput");
     localStorage.removeItem("encryptedMessage");
-
-    // Reset input fields
     document.getElementById("messageInput").value = "";
     document.getElementById("encryptedOutput").value = "";
     document.getElementById("decryptedOutput").value = "";
